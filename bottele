@@ -1,0 +1,45 @@
+from telethon import TelegramClient
+from telethon import TelegramClient, events, sync
+from telethon import functions, types
+from telethon.tl.functions.messages import GetBotCallbackAnswerRequest
+import time, re
+import asyncio, os
+from selenium import webdriver
+
+api_id = 1740013
+api_hash = '4a371c4c5513f0d25759bed78402ce9e'
+mystr=""
+client = TelegramClient('bot', api_id, api_hash)
+ 
+client.start()
+
+
+dialogs =client.get_dialogs()
+for dlg in dialogs:
+    if dlg.title == 'LTC Click Bot':
+        tegmo = dlg
+        break
+while 1:
+    msgs = client.get_messages(tegmo, limit=1)
+    for msg in msgs:
+        if msg.reply_markup is not None:
+            print(msg.reply_markup)
+            button_url=msg.reply_markup.rows[0].buttons[0].url
+            print(button_url)
+    driver = webdriver.Chrome()
+    driver.get(button_url)
+    try:
+        mystr=driver.find_element_by_xpath("//html/body/div").text
+    except:
+        pass
+    if re.search(r'\bSwitch to Solve Media\b', mystr):
+        print("Капча!")
+        resp = client(GetBotCallbackAnswerRequest(
+                        'LTC Click Bot',
+                        msg.id,
+                        data=msg.reply_markup.rows[1].buttons[1].data
+                    ))
+        time.sleep(5)
+    else:
+        time.sleep(15)
+        driver.close()
